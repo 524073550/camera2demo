@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="vertical"
-    tools:context=".MainActivity">
-
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -14,9 +9,9 @@
         android:background="@color/colorAccent"
         android:clickable="true"
         android:gravity="center"
-        android:onClick="camera"
+        android:onClick="start"
         android:padding="15dp"
-        android:text="camera"
+        android:text="开始录制"
         android:textColor="#ffffffff"
         android:textSize="18sp" />
 
@@ -27,12 +22,9 @@
         android:background="@color/colorAccent"
         android:clickable="true"
         android:gravity="center"
-        android:onClick="AudioRecord"
+        android:onClick="stop"
         android:padding="15dp"
-        android:text="音频录制"
+        android:text="停止录制"
         android:textColor="#ffffffff"
         android:textSize="18sp" />
-
-
-
 </LinearLayout>

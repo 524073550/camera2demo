@@ -1,4 +1,4 @@
-package com.ke.zhu.camerademo;
+package com.ke.zhu.camerademo.util;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -24,6 +24,8 @@ import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
+
+import com.ke.zhu.camerademo.JniUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
