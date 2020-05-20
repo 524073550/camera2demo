@@ -78,4 +78,14 @@ public class JniUtils {
      */
     public static native void scale(byte[] src, int width, int height, byte[] dst, int dstWidth, int dstHeight);
 
+    /**
+     * 数据缩小
+     *
+     * @param src       原数据
+     * @param width     原数据宽
+     * @param height    原数据高
+     * @param dst       转换后的数据
+     */
+    public static native void I420ToNV12(byte[] src, int width, int height, byte[] dst);
+
 }

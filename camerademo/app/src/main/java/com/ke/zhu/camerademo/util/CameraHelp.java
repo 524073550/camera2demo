@@ -64,6 +64,7 @@ public class CameraHelp {
     private boolean canExchangeCamera;
     private boolean isMirror;
     private boolean canTakePic;
+    private boolean canVideo;
     private Integer cameraFacing = CameraCharacteristics.LENS_FACING_BACK;
     private Activity context;
     private CamerDataCallback camerDataCallback;
@@ -137,6 +138,8 @@ public class CameraHelp {
         exchange = exchangeWidthAndHeight(rotation, cameraSensorOrientation);
         savePicSizeList = getBestSize(savePicSize, SAVE_MAX_WIDTH, SAVE_MAX_HEIGHT);
         previewSizeList = getBestSize(previewSize, PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT);
+        PREVIEW_MAX_WIDTH = previewSizeList.getWidth();
+        PREVIEW_MAX_HEIGHT = previewSizeList.getHeight();
         surfaceTexture.setDefaultBufferSize(previewSizeList.getWidth(), previewSizeList.getHeight());
 
         //当设置格式为JPEG时 onImageAvailableListener回调不会执行,当拍照是创建拍照的会话时才会回调
@@ -252,10 +255,7 @@ public class CameraHelp {
      * 所以结论为 plane[0]+ plane[1]+ plane[2] 可得I420
      * plane[0]+ plane[2]+ plane[1] 可得YV12
      */
-    byte[] y = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT];
-    byte[] vu = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT / 2 - 1];
-    byte[] dst = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT * 3 / 2];
-    byte[] dstRotate = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT * 3 / 2];
+
 
     ImageReader.OnImageAvailableListener onImageAvailableListener = new ImageReader.OnImageAvailableListener() {
         @SuppressLint("NewApi")
@@ -286,6 +286,10 @@ public class CameraHelp {
 
             if (camerDataCallback != null && canTakePic) {
                 canTakePic = false;
+                byte[] y = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT];
+                byte[] vu = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT / 2 - 1];
+                byte[] dst = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT * 3 / 2];
+                byte[] dstRotate = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT * 3 / 2];
                 planes[0].getBuffer().get(y);
                 planes[2].getBuffer().get(vu);
                 JniUtils.nv21ToI420(y, vu, PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT, dst);
@@ -301,6 +305,22 @@ public class CameraHelp {
                     camerDataCallback.cameraCallback(nv21);
                 }*/
             }
+            if (canVideo&&camerDataCallback != null){
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                byte[] y = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT];
+                byte[] vu = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT / 2 - 1];
+                byte[] dst = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT * 3 / 2];
+                byte[] dstRotate = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT * 3 / 2];
+                planes[0].getBuffer().get(y);
+                planes[2].getBuffer().get(vu);
+                JniUtils.nv21ToI420(y, vu, PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT, dst);
+                JniUtils.I420Rotate(dst, PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT, dstRotate, 90,isMirror);
+                camerDataCallback.cameraCallback(dstRotate);
+            }
             image.close();
         }
     };
@@ -308,6 +328,16 @@ public class CameraHelp {
 
     public void setCameraCallback(CamerDataCallback cameraCallback) {
         this.camerDataCallback = cameraCallback;
+    }
+
+
+    public void startVideo() {
+        if (canVideo){
+            canVideo = false;
+        }else {
+            canVideo = true;
+        }
+
     }
 
 

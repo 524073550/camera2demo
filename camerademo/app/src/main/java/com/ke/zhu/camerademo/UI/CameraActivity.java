@@ -42,12 +42,6 @@ public class CameraActivity extends AppCompatActivity implements CameraHelp.Came
         TextureView textureview = findViewById(R.id.textureview);
         cameraHelp = new CameraHelp(textureview, this);
         cameraHelp.setCameraCallback(this);
-        try {
-            File file3 = new File(Environment.getExternalStorageDirectory().getPath()+"/cam.yuv");
-            fileOutputStream3 = new FileOutputStream(file3);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -67,7 +61,6 @@ public class CameraActivity extends AppCompatActivity implements CameraHelp.Came
 
     @Override
     public void cameraCallback(byte[] data) {
-        if (fileOutputStream3 != null) {
             byte[] nv21= new byte[data.length];
             //由于进行了旋转 那么宽高需要对换
             JniUtils.yuvI420ToNV21(data,nv21,cameraHelp.PREVIEW_MAX_HEIGHT,cameraHelp.PREVIEW_MAX_WIDTH );
@@ -84,8 +77,6 @@ public class CameraActivity extends AppCompatActivity implements CameraHelp.Came
                     ll_root.setVisibility(View.VISIBLE);
                 }
             });
-
-        }
     }
 
     public void take_pic(View view) {

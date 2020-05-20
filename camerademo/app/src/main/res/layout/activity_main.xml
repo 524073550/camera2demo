@@ -32,6 +32,18 @@
         android:text="音频录制"
         android:textColor="#ffffffff"
         android:textSize="18sp" />
+ <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:background="@color/colorAccent"
+        android:clickable="true"
+        android:gravity="center"
+        android:onClick="video"
+        android:padding="15dp"
+        android:text="视频录制"
+        android:textColor="#ffffffff"
+        android:textSize="18sp" />
 
 
 
