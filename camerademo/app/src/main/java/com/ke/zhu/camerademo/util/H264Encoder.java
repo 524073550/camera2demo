@@ -3,7 +3,6 @@ package com.ke.zhu.camerademo.util;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
-import android.util.Log;
 
 import com.ke.zhu.camerademo.JniUtils;
 
@@ -21,12 +20,13 @@ public class H264Encoder {
     private MediaCodec mediaCodec;
     private final static int TIMEOUT_USEC = 12000;
     private byte[] configByte;
+    private final MediaFormat videoFormat;
 
     public H264Encoder(int width, int height, int framerate) {
         this.width = width;
         this.height = height;
         this.framerate = framerate;
-        MediaFormat videoFormat = MediaFormat.createVideoFormat("video/avc", width, height);
+        videoFormat = MediaFormat.createVideoFormat("video/avc", width, height);
         //描述视频格式中内容的颜色格式的键。
         videoFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible);
         videoFormat.setInteger(MediaFormat.KEY_BIT_RATE, width * height * 5);
@@ -37,6 +37,7 @@ public class H264Encoder {
         try {
             mediaCodec = MediaCodec.createEncoderByType("video/avc");
             mediaCodec.configure(videoFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
+            mediaCodec.start();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -50,7 +51,6 @@ public class H264Encoder {
 
     public void putYUVData(byte[] data) {
         if (data != null) {
-            Log.e("添加数据==", "11111");
             if (yuvQueue.size() >= 10) {
                 yuvQueue.poll();
             }
@@ -59,23 +59,24 @@ public class H264Encoder {
     }
 
     boolean isRunning;
-    private byte[] nv12Data = new byte[width * height * 3 / 2];
+
 
     public void startEncoder() {
-        if (mediaCodec != null) {
-            mediaCodec.start();
-        }
         new Thread(new Runnable() {
             @Override
             public void run() {
+
                 isRunning = true;
                 byte[] input = null;
                 long pts = 0;
                 long generateIndex = 0;
+
                 while (isRunning) {
+
                     if (yuvQueue.size() > 0) {
                         //该数据格式必须为nv12格式
                         byte[] buffer = yuvQueue.poll();
+                        byte[] nv12Data = new byte[width * height * 3 / 2];
                         JniUtils.I420ToNV12(buffer, width, height, nv12Data);
                         input = nv12Data;
                     }
@@ -90,12 +91,10 @@ public class H264Encoder {
                         }
                         MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
                         int outputBufferIndex = mediaCodec.dequeueOutputBuffer(bufferInfo, TIMEOUT_USEC);
-                        byte[] outData = null;
                         while (outputBufferIndex >= 0) {
                             ByteBuffer outputBuffer = mediaCodec.getOutputBuffer(outputBufferIndex);
-                            outputBuffer.clear();
-                            outData = new byte[bufferInfo.size];
-                            outputBuffer.put(outData);
+                            byte[] outData = new byte[bufferInfo.size];
+                            outputBuffer.get(outData);
                             if (bufferInfo.flags == MediaCodec.BUFFER_FLAG_CODEC_CONFIG) {
                                 //初始化/编解码器特定数据，而不是媒体数据,
                                 configByte = new byte[bufferInfo.size];
@@ -122,6 +121,12 @@ public class H264Encoder {
                             outputBufferIndex = mediaCodec.dequeueOutputBuffer(bufferInfo, TIMEOUT_USEC);
                         }
 
+                    } else {
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
 

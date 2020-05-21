@@ -306,11 +306,6 @@ public class CameraHelp {
                 }*/
             }
             if (canVideo&&camerDataCallback != null){
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
                 byte[] y = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT];
                 byte[] vu = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT / 2 - 1];
                 byte[] dst = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT * 3 / 2];

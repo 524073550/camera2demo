@@ -82,6 +82,9 @@ void I420ToNV21(jbyte *src_i420_data, jint width, jint height, jbyte *dst_nv21_d
             width, height);
 }
 
+
+
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_ke_zhu_camerademo_JniUtils_nv21ToI420(JNIEnv *env, jclass clazz, jbyteArray srcY,
@@ -167,7 +170,27 @@ Java_com_ke_zhu_camerademo_JniUtils_I420Rotate(JNIEnv *env, jclass clazz, jbyteA
 
     env->ReleaseByteArrayElements(dst, dstI420Data, 0);
 }
+void I420ToNV12(jbyte *src_i420_data, jint width, jint height, jbyte *dst_nv12_data) {
 
+
+    jint src_y_size = width * height;
+    jint src_u_size = (width >> 1) * (height >> 1);
+
+    jbyte *src_i420_y_data = src_i420_data;
+    jbyte *src_i420_u_data = src_i420_data + src_y_size;
+    jbyte *src_i420_v_data = src_i420_data + src_y_size + src_u_size;
+
+    jbyte *src_nv21_y_data = dst_nv12_data;
+    jbyte *src_nv21_uv_data = dst_nv12_data + src_y_size;
+
+    libyuv::I420ToNV12(
+            (const uint8_t *) src_i420_y_data, width,
+            (const uint8_t *) src_i420_u_data, width >> 1,
+            (const uint8_t *) src_i420_v_data, width >> 1,
+            (uint8_t *) src_nv21_y_data, width,
+            (uint8_t *) src_nv21_uv_data, width,
+            width, height);
+}
 
 extern "C"
 JNIEXPORT void JNICALL
@@ -178,21 +201,25 @@ Java_com_ke_zhu_camerademo_JniUtils_I420ToNV12(JNIEnv *env, jclass clazz, jbyteA
 
 
     jbyte *src_i420_data = env->GetByteArrayElements(src, NULL);
+    jbyte *src_nv12_data = env->GetByteArrayElements(dst, NULL);
+
     jbyte *src_i420_y_data = src_i420_data;
     jbyte *src_i420_u_data = src_i420_data+src_i420_y_size;
     jbyte *src_i420_v_data = src_i420_data+src_i420_y_size+src_i420_u_size;
 
-    jbyte *src_nv12_data = env->GetByteArrayElements(dst, NULL);
+
     jbyte *src_nv12_y_data = src_nv12_data;
     jbyte *src_nv12_uv_data = src_nv12_data+src_i420_y_size;
 
     libyuv::I420ToNV12((const uint8_t*)src_i420_y_data,width,
                        (const uint8_t*)src_i420_u_data,width>>1,
                        (const uint8_t*)src_i420_v_data,width>>1,
-                       ( uint8_t*)src_nv12_y_data,width>>1,
-                       ( uint8_t*)src_nv12_uv_data,width>>1,
+                       ( uint8_t*)src_nv12_y_data,width,
+                       ( uint8_t*)src_nv12_uv_data,width,
                        width,height);
-    env->ReleaseByteArrayElements(src,src_i420_data,0);
-    env->ReleaseByteArrayElements(dst,src_nv12_data,0);
+
+//    I420ToNV12(src_i420_data, width, height, src_nv12_data);
+    env->ReleaseByteArrayElements(src, src_i420_data, 0);
+    env->ReleaseByteArrayElements(dst, src_nv12_data, 0);
 }
 

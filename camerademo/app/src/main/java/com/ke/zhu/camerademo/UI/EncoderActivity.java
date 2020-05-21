@@ -30,7 +30,7 @@ public class EncoderActivity extends AppCompatActivity implements CameraHelp.Cam
         cameraHelp.setCameraCallback(this);
         h264Encoder = new H264Encoder(cameraHelp.PREVIEW_MAX_HEIGHT, cameraHelp.PREVIEW_MAX_WIDTH, 30);
         try {
-            File file = new File(Environment.getExternalStorageDirectory().getPath() + "/test.mp4");
+            File file = new File(getExternalCacheDir().getPath() + "/test.mp4");
             FileOutputStream fileOutputStream = new FileOutputStream(file);
             BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
             h264Encoder.setOutputStrem(bufferedOutputStream);
