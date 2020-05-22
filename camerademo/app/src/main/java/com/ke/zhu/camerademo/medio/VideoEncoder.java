@@ -1,18 +1,16 @@
-package com.ke.zhu.camerademo.util;
+package com.ke.zhu.camerademo.medio;
 
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 
+import com.ke.zhu.camerademo.Callback;
 import com.ke.zhu.camerademo.JniUtils;
 
-import java.io.BufferedOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.LinkedBlockingQueue;
 
-
-public class H264Encoder {
+public class VideoEncoder {
     private int width;
     private int height;
     private int framerate;
@@ -21,8 +19,10 @@ public class H264Encoder {
     private final static int TIMEOUT_USEC = 12000;
     private byte[] configByte;
     private final MediaFormat videoFormat;
+    private long presentationTimeUs;
 
-    public H264Encoder(int width, int height, int framerate) {
+
+    public VideoEncoder(int width, int height, int framerate) {
         this.width = width;
         this.height = height;
         this.framerate = framerate;
@@ -36,17 +36,9 @@ public class H264Encoder {
         videoFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1);
         try {
             mediaCodec = MediaCodec.createEncoderByType("video/avc");
-            mediaCodec.configure(videoFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
-            mediaCodec.start();
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private BufferedOutputStream bufferedOutputStream;
-
-    public void setOutputStrem(BufferedOutputStream outputStrem) {
-        bufferedOutputStream = outputStrem;
     }
 
     public void putYUVData(byte[] data) {
@@ -58,21 +50,24 @@ public class H264Encoder {
         }
     }
 
-    boolean isRunning;
+
+    private boolean isRunning;
+    private boolean vEncoderEnd;
 
 
     public void startEncoder() {
         new Thread(new Runnable() {
             @Override
             public void run() {
-
+                mediaCodec.configure(videoFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
+                mediaCodec.start();
                 isRunning = true;
+                vEncoderEnd = false;
                 byte[] input = null;
-                long pts = 0;
+
                 long generateIndex = 0;
-
+                presentationTimeUs = System.currentTimeMillis() * 1000;
                 while (isRunning) {
-
                     if (yuvQueue.size() > 0) {
                         //该数据格式必须为nv12格式
                         byte[] buffer = yuvQueue.poll();
@@ -80,45 +75,52 @@ public class H264Encoder {
                         JniUtils.I420ToNV12(buffer, width, height, nv12Data);
                         input = nv12Data;
                     }
-                    if (input != null && mediaCodec != null && bufferedOutputStream != null) {
+                    if (input != null && mediaCodec != null) {
                         int inputBufferIndex = mediaCodec.dequeueInputBuffer(-1);
                         if (inputBufferIndex >= 0) {
-                            pts = computePresentationTime(generateIndex);
+                            long pts = System.currentTimeMillis() * 1000 - presentationTimeUs;
                             ByteBuffer inputBuffer = mediaCodec.getInputBuffer(inputBufferIndex);
                             inputBuffer.clear();
                             inputBuffer.put(input);
-                            mediaCodec.queueInputBuffer(inputBufferIndex, 0, input.length, pts, 0);
+                            if (vEncoderEnd) {
+                                mediaCodec.queueInputBuffer(inputBufferIndex, 0, input.length, pts, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
+                            } else {
+                                mediaCodec.queueInputBuffer(inputBufferIndex, 0, input.length, pts, 0);
+                            }
                         }
                         MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
                         int outputBufferIndex = mediaCodec.dequeueOutputBuffer(bufferInfo, TIMEOUT_USEC);
+
+                        if (outputBufferIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+                            // Subsequent data will conform to new format.
+                            MediaFormat format = mediaCodec.getOutputFormat();
+                            if (callcack != null) {
+                                callcack.outMediaFormat(0, format);
+                            }
+                        }
                         while (outputBufferIndex >= 0) {
                             ByteBuffer outputBuffer = mediaCodec.getOutputBuffer(outputBufferIndex);
                             byte[] outData = new byte[bufferInfo.size];
                             outputBuffer.get(outData);
-                            if (bufferInfo.flags == MediaCodec.BUFFER_FLAG_CODEC_CONFIG) {
-                                //初始化/编解码器特定数据，而不是媒体数据,
-                                configByte = new byte[bufferInfo.size];
-                                configByte = outData;
-                            } else if (bufferInfo.flags == MediaCodec.BUFFER_FLAG_KEY_FRAME) {
-                                //关键帧信息
-                                byte[] frameData = new byte[configByte.length + outData.length];
-                                System.arraycopy(configByte, 0, frameData, 0, configByte.length);
-                                System.arraycopy(outData, 0, frameData, configByte.length, outData.length);
-                                try {
-                                    bufferedOutputStream.write(frameData, 0, frameData.length);
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                            } else {
-                                try {
-                                    bufferedOutputStream.write(outData, 0, outData.length);
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                            }
 
+                            if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
+                                // You shoud set output format to muxer here when you target Android4.3 or less
+                                // but MediaCodec#getOutputFormat can not call here(because INFO_OUTPUT_FORMAT_CHANGED don't come yet)
+                                // therefor we should expand and prepare output format from buffer data.
+                                // This sample is for API>=18(>=Android 4.3), just ignore this flag here
+
+                                bufferInfo.size = 0;
+                            }
+                            if (bufferInfo.size != 0 && !vEncoderEnd) {
+                                callcack.mediaCallback(0, outputBuffer, bufferInfo);
+                            }
                             mediaCodec.releaseOutputBuffer(outputBufferIndex, false);
-                            outputBufferIndex = mediaCodec.dequeueOutputBuffer(bufferInfo, TIMEOUT_USEC);
+                            outputBufferIndex = mediaCodec.dequeueOutputBuffer(bufferInfo, 0);
+
+                            if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
+                                isRunning = false;
+                                return;
+                            }
                         }
 
                     } else {
@@ -129,35 +131,21 @@ public class H264Encoder {
                         }
                     }
                 }
-
                 if (mediaCodec != null) {
                     mediaCodec.stop();
                     mediaCodec.release();
-                }
-                if (bufferedOutputStream != null) {
-                    try {
-                        bufferedOutputStream.flush();
-                        bufferedOutputStream.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
                 }
             }
         }).start();
     }
 
-    /**
-     * 根据帧数生成时间戳
-     *
-     * @param frameIndex
-     * @return
-     */
-    private long computePresentationTime(long frameIndex) {
-        return 132 + frameIndex * 1000000 / framerate;
+    private Callback callcack;
+
+    public void setCallcack(Callback callcack) {
+        this.callcack = callcack;
     }
 
-    public void stopVideo() {
-        isRunning = false;
+    public void stopRecord() {
+        vEncoderEnd = true;
     }
 }

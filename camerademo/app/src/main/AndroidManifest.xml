@@ -32,6 +32,8 @@
         <activity
             android:name=".UI.EncoderActivity"
             android:screenOrientation="portrait" />
+        <activity android:name=".UI.AVEncoderActivity"
+            android:screenOrientation="portrait" />
     </application>
 
 </manifest>

@@ -79,6 +79,11 @@ public class CameraActivity extends AppCompatActivity implements CameraHelp.Came
             });
     }
 
+    @Override
+    public void cameraStartSuccess() {
+
+    }
+
     public void take_pic(View view) {
         cameraHelp.takPic();
     }

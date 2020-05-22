@@ -222,6 +222,7 @@ public class CameraHelp {
     };
 
     private boolean isFrist;
+    private boolean success;
 
     /**
      * I420: YYYYYYYY UU VV    =>YUV420P
@@ -293,7 +294,7 @@ public class CameraHelp {
                 planes[0].getBuffer().get(y);
                 planes[2].getBuffer().get(vu);
                 JniUtils.nv21ToI420(y, vu, PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT, dst);
-                JniUtils.I420Rotate(dst, PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT, dstRotate, 90,isMirror);
+                JniUtils.I420Rotate(dst, PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT, dstRotate, 90, isMirror);
                 camerDataCallback.cameraCallback(dstRotate);
                 /*byte[] y = new byte[planes[0].getBuffer().remaining()];
                 planes[0].getBuffer().get(y);
@@ -305,7 +306,11 @@ public class CameraHelp {
                     camerDataCallback.cameraCallback(nv21);
                 }*/
             }
-            if (canVideo&&camerDataCallback != null){
+            if (camerDataCallback!=null&&!success){
+                success = true;
+                camerDataCallback.cameraStartSuccess();
+            }
+            if (canVideo && camerDataCallback != null) {
                 byte[] y = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT];
                 byte[] vu = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT / 2 - 1];
                 byte[] dst = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT * 3 / 2];
@@ -313,8 +318,9 @@ public class CameraHelp {
                 planes[0].getBuffer().get(y);
                 planes[2].getBuffer().get(vu);
                 JniUtils.nv21ToI420(y, vu, PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT, dst);
-                JniUtils.I420Rotate(dst, PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT, dstRotate, 90,isMirror);
+                JniUtils.I420Rotate(dst, PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT, dstRotate, 90, isMirror);
                 camerDataCallback.cameraCallback(dstRotate);
+
             }
             image.close();
         }
@@ -326,18 +332,15 @@ public class CameraHelp {
     }
 
 
-    public void startVideo() {
-        if (canVideo){
-            canVideo = false;
-        }else {
-            canVideo = true;
-        }
-
+    public void startVideo(boolean canVideo) {
+        this.canVideo = canVideo;
     }
 
 
     public interface CamerDataCallback {
         void cameraCallback(byte[] data);
+
+        void cameraStartSuccess();
     }
 
 
