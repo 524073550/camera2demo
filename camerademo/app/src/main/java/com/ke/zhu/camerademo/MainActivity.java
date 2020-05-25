@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.ke.zhu.camerademo.UI.AVEncoderActivity;
+import com.ke.zhu.camerademo.UI.AVEncoderActivity2;
 import com.ke.zhu.camerademo.UI.AudioRecordActivity;
 import com.ke.zhu.camerademo.UI.CameraActivity;
 import com.ke.zhu.camerademo.UI.EncoderActivity;
@@ -37,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void medio(View view) {
-        Intent intent = new Intent(this, AVEncoderActivity.class);
+        Intent intent = new Intent(this, AVEncoderActivity2.class);
         startActivity(intent);
     }
 }

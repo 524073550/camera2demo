@@ -203,7 +203,7 @@ Java_com_ke_zhu_camerademo_JniUtils_I420ToNV12(JNIEnv *env, jclass clazz, jbyteA
     jbyte *src_i420_data = env->GetByteArrayElements(src, NULL);
     jbyte *src_nv12_data = env->GetByteArrayElements(dst, NULL);
 
-/*    jbyte *src_i420_y_data = src_i420_data;
+    jbyte *src_i420_y_data = src_i420_data;
     jbyte *src_i420_u_data = src_i420_data+src_i420_y_size;
     jbyte *src_i420_v_data = src_i420_data+src_i420_y_size+src_i420_u_size;
 
@@ -216,9 +216,9 @@ Java_com_ke_zhu_camerademo_JniUtils_I420ToNV12(JNIEnv *env, jclass clazz, jbyteA
                        (const uint8_t*)src_i420_v_data,width>>1,
                        ( uint8_t*)src_nv12_y_data,width,
                        ( uint8_t*)src_nv12_uv_data,width,
-                       width,height);*/
+                       width,height);
 
-    I420ToNV12(src_i420_data, width, height, src_nv12_data);
+//    I420ToNV12(src_i420_data, width, height, src_nv12_data);
     env->ReleaseByteArrayElements(src, src_i420_data, 0);
     env->ReleaseByteArrayElements(dst, src_nv12_data, 0);
 }
