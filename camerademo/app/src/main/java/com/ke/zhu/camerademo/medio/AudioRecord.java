@@ -49,12 +49,12 @@ public class AudioRecord {
                 , channelConfig
                 , audioFormat
                 , mRecordBufferSize);
-
+        int channelConfiga =   channelConfig == AudioFormat.CHANNEL_CONFIGURATION_STEREO ? 2 : 1;
         MediaFormat audioFormat = MediaFormat.createAudioFormat(AUDIO_MIME_TYPE, sampleRateInHz, channelConfig);
         audioFormat.setInteger(MediaFormat.KEY_AAC_PROFILE, MediaCodecInfo.CodecProfileLevel.AACObjectLC);
         audioFormat.setInteger(MediaFormat.KEY_CHANNEL_MASK, AudioFormat.CHANNEL_IN_STEREO);
         audioFormat.setInteger(MediaFormat.KEY_BIT_RATE, BIT_RATE);
-        audioFormat.setInteger(MediaFormat.KEY_CHANNEL_COUNT, channelConfig);
+        audioFormat.setInteger(MediaFormat.KEY_CHANNEL_COUNT, channelConfiga);
         audioFormat.setInteger(MediaFormat.KEY_SAMPLE_RATE, sampleRateInHz);
 
         try {

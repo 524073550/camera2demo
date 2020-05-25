@@ -10,13 +10,14 @@ public class AudioRecording {
     private String TAG = "AudioRecording";
     //采样率
     private int sampleRateInHz = 41400;
-    private int channelConfig = AudioFormat.CHANNEL_IN_MONO;//单声道
+    private int channelConfig = AudioFormat.CHANNEL_CONFIGURATION_STEREO;//单声道
     //音频格式
     private int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
     private boolean audioRecording;
     private AudioRecord audioRecord;
     private int minBufferSize;
     private int pcmFormat;
+    private int channelConfiga;
 
     public void AudioRecording() {
 
@@ -33,10 +34,11 @@ public class AudioRecording {
                 audioRecord = null;
                 continue;
             }
-
+            channelConfiga = channelConfig == AudioFormat.CHANNEL_CONFIGURATION_STEREO ? 2 : 1;
             minBufferSize =  Math.min(4096, minBufferSize);
             sampleRateInHz =sampleRates[i] ;
             pcmFormat = 16;
+            break;
         }
     }
 
@@ -68,7 +70,7 @@ public class AudioRecording {
     }
 
     public int getChannelConfig() {
-        return channelConfig;
+        return channelConfiga;
     }
 
     public int getPcmFormat() {

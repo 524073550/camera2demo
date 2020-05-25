@@ -84,13 +84,14 @@ public class AVEncoder {
             return;
         }
         int rate = audioFrom * sampleRate * channelCount;
+        //channelCount != channelConfig 此处channelCount表示音频的通道数 如单声道为1 双声道为2
         audioFormat = MediaFormat.createAudioFormat(AUDIO_MIME_TYPE, sampleRate, channelCount);
         audioFormat.setInteger(MediaFormat.KEY_AAC_PROFILE, MediaCodecInfo.CodecProfileLevel.AACObjectLC);
         audioFormat.setInteger(MediaFormat.KEY_CHANNEL_MASK, AudioFormat.CHANNEL_IN_STEREO);
         audioFormat.setInteger(MediaFormat.KEY_BIT_RATE, rate);
         audioFormat.setInteger(MediaFormat.KEY_CHANNEL_COUNT, channelCount);
         audioFormat.setInteger(MediaFormat.KEY_SAMPLE_RATE, sampleRate);
-
+        Log.e(TAG, "format === " + audioFormat.toString());
         try {
             audioEncoder = MediaCodec.createEncoderByType(AUDIO_MIME_TYPE);
         } catch (IOException e) {
