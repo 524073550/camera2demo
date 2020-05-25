@@ -32,7 +32,11 @@
         <activity
             android:name=".UI.EncoderActivity"
             android:screenOrientation="portrait" />
-        <activity android:name=".UI.AVEncoderActivity"
+        <activity
+            android:name=".UI.AVEncoderActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".UI.AVEncoderActivity2"
             android:screenOrientation="portrait" />
     </application>
 

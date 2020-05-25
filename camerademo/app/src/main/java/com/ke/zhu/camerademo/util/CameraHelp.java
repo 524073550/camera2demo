@@ -140,6 +140,10 @@ public class CameraHelp {
         previewSizeList = getBestSize(previewSize, PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT);
         PREVIEW_MAX_WIDTH = previewSizeList.getWidth();
         PREVIEW_MAX_HEIGHT = previewSizeList.getHeight();
+        y = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT];
+        vu = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT / 2 - 1];
+        dst = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT * 3 / 2];
+        dstRotate = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT * 3 / 2];
         surfaceTexture.setDefaultBufferSize(previewSizeList.getWidth(), previewSizeList.getHeight());
 
         //当设置格式为JPEG时 onImageAvailableListener回调不会执行,当拍照是创建拍照的会话时才会回调
@@ -256,7 +260,10 @@ public class CameraHelp {
      * 所以结论为 plane[0]+ plane[1]+ plane[2] 可得I420
      * plane[0]+ plane[2]+ plane[1] 可得YV12
      */
-
+    byte[] y ;
+    byte[] vu;
+    byte[] dst;
+    byte[] dstRotate ;
 
     ImageReader.OnImageAvailableListener onImageAvailableListener = new ImageReader.OnImageAvailableListener() {
         @SuppressLint("NewApi")
@@ -287,10 +294,6 @@ public class CameraHelp {
 
             if (camerDataCallback != null && canTakePic) {
                 canTakePic = false;
-                byte[] y = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT];
-                byte[] vu = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT / 2 - 1];
-                byte[] dst = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT * 3 / 2];
-                byte[] dstRotate = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT * 3 / 2];
                 planes[0].getBuffer().get(y);
                 planes[2].getBuffer().get(vu);
                 JniUtils.nv21ToI420(y, vu, PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT, dst);
@@ -311,10 +314,6 @@ public class CameraHelp {
                 camerDataCallback.cameraStartSuccess();
             }
             if (canVideo && camerDataCallback != null) {
-                byte[] y = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT];
-                byte[] vu = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT / 2 - 1];
-                byte[] dst = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT * 3 / 2];
-                byte[] dstRotate = new byte[PREVIEW_MAX_WIDTH * PREVIEW_MAX_HEIGHT * 3 / 2];
                 planes[0].getBuffer().get(y);
                 planes[2].getBuffer().get(vu);
                 JniUtils.nv21ToI420(y, vu, PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT, dst);

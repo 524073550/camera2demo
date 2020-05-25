@@ -3,6 +3,7 @@ package com.ke.zhu.camerademo.medio;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
+import android.util.Log;
 
 import com.ke.zhu.camerademo.Callback;
 import com.ke.zhu.camerademo.JniUtils;
@@ -83,6 +84,7 @@ public class VideoEncoder {
                             inputBuffer.clear();
                             inputBuffer.put(input);
                             if (vEncoderEnd) {
+                                Log.e("视频结束","视频结束帧");
                                 mediaCodec.queueInputBuffer(inputBufferIndex, 0, input.length, pts, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
                             } else {
                                 mediaCodec.queueInputBuffer(inputBufferIndex, 0, input.length, pts, 0);
@@ -100,8 +102,8 @@ public class VideoEncoder {
                         }
                         while (outputBufferIndex >= 0) {
                             ByteBuffer outputBuffer = mediaCodec.getOutputBuffer(outputBufferIndex);
-                            byte[] outData = new byte[bufferInfo.size];
-                            outputBuffer.get(outData);
+//                            byte[] outData = new byte[bufferInfo.size];
+//                            outputBuffer.get(outData);
 
                             if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
                                 // You shoud set output format to muxer here when you target Android4.3 or less
