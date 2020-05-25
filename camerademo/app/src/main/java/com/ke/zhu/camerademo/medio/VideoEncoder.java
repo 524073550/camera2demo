@@ -119,7 +119,6 @@ public class VideoEncoder {
 
                             if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
                                 isRunning = false;
-                                return;
                             }
                         }
 
@@ -134,6 +133,7 @@ public class VideoEncoder {
                 if (mediaCodec != null) {
                     mediaCodec.stop();
                     mediaCodec.release();
+
                 }
             }
         }).start();

@@ -24,7 +24,7 @@ public class AudioRecord {
     //音频格式
     private int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
     //比特率
-    private static final int BIT_RATE = 64000;
+    private static final int BIT_RATE = 64000*16*3;
 
     private final int TIMEOUT_USEC = 10000;
 
@@ -52,7 +52,7 @@ public class AudioRecord {
 
         MediaFormat audioFormat = MediaFormat.createAudioFormat(AUDIO_MIME_TYPE, sampleRateInHz, channelConfig);
         audioFormat.setInteger(MediaFormat.KEY_AAC_PROFILE, MediaCodecInfo.CodecProfileLevel.AACObjectLC);
-        audioFormat.setInteger(MediaFormat.KEY_CHANNEL_MASK, AudioFormat.CHANNEL_CONFIGURATION_STEREO);
+        audioFormat.setInteger(MediaFormat.KEY_CHANNEL_MASK, AudioFormat.CHANNEL_IN_STEREO);
         audioFormat.setInteger(MediaFormat.KEY_BIT_RATE, BIT_RATE);
         audioFormat.setInteger(MediaFormat.KEY_CHANNEL_COUNT, channelConfig);
         audioFormat.setInteger(MediaFormat.KEY_SAMPLE_RATE, sampleRateInHz);
@@ -124,12 +124,13 @@ public class AudioRecord {
                             if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
                                 Log.e(TAG, "Recv Audio Encoder===BUFFER_FLAG_END_OF_STREAM=====");
                                 isRuning = true;
-                                return;
+
                             }
                         }
-
                     }
                     mAudioRecord.stop();//停止录制
+                    mAudioRecord.release();
+                    Log.e(TAG,"停止录音");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
