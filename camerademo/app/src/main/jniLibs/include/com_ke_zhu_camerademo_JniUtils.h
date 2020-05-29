@@ -55,6 +55,10 @@ Java_com_ke_zhu_camerademo_JniUtils_I420Rotate(JNIEnv *, jclass , jbyteArray ,
 JNIEXPORT void JNICALL
 Java_com_ke_zhu_camerademo_JniUtils_I420ToNV12(JNIEnv *, jclass , jbyteArray ,
                                                jint , jint , jbyteArray );
+
+JNIEXPORT void JNICALL
+Java_com_ke_zhu_camerademo_JniUtils_getFfmpegInfo(JNIEnv *env, jclass clazz);
+
 #ifdef __cplusplus
 }
 #endif

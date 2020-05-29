@@ -12,8 +12,10 @@ android {
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         ndk {
+//            abiFilters 'armeabi-v7a'
             //选择要添加的对应cpu类型的.so库。
             abiFilters 'arm64-v8a'
+
         }
         externalNativeBuild {
             cmake {

@@ -88,4 +88,11 @@ public class JniUtils {
      */
     public static native void I420ToNV12(byte[] src, int width, int height, byte[] dst);
 
+
+    /**
+     * ffmpeg版本信息
+     */
+
+    public static native void getFfmpegInfo();
+
 }

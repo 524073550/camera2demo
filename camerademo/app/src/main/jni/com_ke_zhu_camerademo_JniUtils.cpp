@@ -1,5 +1,15 @@
 #include "../jniLibs/include/com_ke_zhu_camerademo_JniUtils.h"
 #include "../jniLibs/include/libyuv.h"
+#include "DebugLog.h"
+extern "C"{
+#include "libavformat/avformat.h"
+#include "libavcodec/avcodec.h"
+#include "libavfilter/avfilter.h"
+#include "libswscale/swscale.h"
+#include "libavutil/avutil.h"
+#include "libpostproc/postprocess.h"
+#include "libswresample/swresample.h"
+}
 
 
 void rotateI420(jbyte *src_i420_data, jint width, jint height, jbyte *dst_i420_data, jint degree) {
@@ -222,4 +232,21 @@ Java_com_ke_zhu_camerademo_JniUtils_I420ToNV12(JNIEnv *env, jclass clazz, jbyteA
     env->ReleaseByteArrayElements(src, src_i420_data, 0);
     env->ReleaseByteArrayElements(dst, src_nv12_data, 0);
 }
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_ke_zhu_camerademo_JniUtils_getFfmpegInfo(JNIEnv *env, jclass clazz) {
+
+    av_register_all();
+    AVInputFormat *if_temp = av_iformat_next(NULL);
+    AVOutputFormat *of_temp = av_oformat_next(NULL);
+    while (if_temp != NULL) {
+        LOGE( "%sInput: ", if_temp->name);
+        if_temp = if_temp->next;
+    }
+    while (of_temp != NULL) {
+        LOGE( "%sOutput:", of_temp->name);
+        of_temp = of_temp->next;
+    }
+}
+
 
